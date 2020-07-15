@@ -15,9 +15,6 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/libs/slick-util-src.zip" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/libs/lwjgl-natives-windows.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/libs/lwjgl-glfw-natives-windows.jar" path-in-jar="/" />
-      <element id="directory" name="res">
-        <element id="dir-copy" path="$PROJECT_DIR$/res" />
-      </element>
     </root>
   </artifact>
 </component>

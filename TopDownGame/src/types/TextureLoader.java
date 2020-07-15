@@ -13,7 +13,7 @@ public class TextureLoader {
 
     //Loads a texture with no fallback, program will crash if the file does not exist
     public static Texture loadTextureNoFallback(String fileName) throws IOException {
-        PNGDecoder decoder = new PNGDecoder(new FileInputStream(fileName));
+        PNGDecoder decoder = new PNGDecoder(TextureLoader.class.getResourceAsStream(fileName));
         ByteBuffer buffer = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
 
         decoder.decode(buffer, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);

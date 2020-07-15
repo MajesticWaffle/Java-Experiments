@@ -56,16 +56,16 @@ public class Renderer{
         //Create fallback texture
         Texture fallback = null;
         try {
-             fallback = TextureLoader.loadTextureNoFallback("res/dev/error.png");
+             fallback = TextureLoader.loadTextureNoFallback("/res/dev/error.png");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         //Load textures
-        tiles[0] = new Tile("res/ground/grass.png", false, fallback);
-        tiles[1] = new Tile("res/ground/sand.png", false, fallback);
+        tiles[0] = new Tile("/res/ground/grass.png", false, fallback);
+        tiles[1] = new Tile("/res/ground/sand.png", false, fallback);
 
-        cursor = TextureLoader.loadTexture("res/ui/cursor.png", fallback);
+        cursor = TextureLoader.loadTexture("/res/ui/cursor.png", fallback);
 
     }
 
