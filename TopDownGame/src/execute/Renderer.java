@@ -5,6 +5,7 @@ import org.lwjgl.opengl.*;
 import java.io.IOException;
 import types.Texture;
 import types.TextureLoader;
+import types.Tile;
 import types.Time;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -13,10 +14,13 @@ import static org.lwjgl.opengl.GL11.*;
 public class Renderer{
     private static final int TileSize = 32;
 
-    private Texture[] textures;
+    private Tile[] tiles;
+    private Texture cursor;
 
     private float cameraPositionX = 0;
-    private float cameraPositionY = 0 ;
+    private float cameraPositionY = 0;
+
+
 
     public long InitOpenGLContext(int windowX, int windowY){
         if(!glfwInit()){
@@ -47,7 +51,7 @@ public class Renderer{
     }
 
     public void LoadTextureResources(){
-        textures = new Texture[1];
+        tiles = new Tile[2];
 
         //Create fallback texture
         Texture fallback = null;
@@ -58,17 +62,22 @@ public class Renderer{
         }
 
         //Load textures
+        tiles[0] = new Tile("res/ground/grass.png", false, fallback);
+        tiles[1] = new Tile("res/ground/sand.png", false, fallback);
 
-        textures[0] = TextureLoader.loadTexture("res/dev/colorspace.png", fallback);
+        cursor = TextureLoader.loadTexture("res/ui/cursor.png", fallback);
+
     }
 
     public void DrawChunk(int chunkPosX, int chunkPosY){
         int chunkOffsetX = (20 * 32) * chunkPosX;
         int chunkOffsetY = (15 * 32) * chunkPosY;
 
-        textures[0].Bind();
+        int[][] localBiomeMap = PerlinGeneration.GenerateChunkBiomeMap(chunkPosX, chunkPosY);
+
         for(int tileY = 0; tileY < 15; tileY++){
             for(int tileX = 0; tileX < 20; tileX++){
+                tiles[localBiomeMap[tileX][tileY]].texture.Bind();
                 glBegin(GL_QUADS);
                     glTexCoord2i(0,0);glVertex2i((TileSize * tileX) + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
                     glTexCoord2i(1,0);glVertex2i((TileSize * tileX) + TileSize + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
@@ -85,6 +94,16 @@ public class Renderer{
                 DrawChunk(x, y);
             }
         }
+    }
+
+    public void DrawCursor(double mouseX, double mouseY){
+        cursor.Bind();
+        glBegin(GL_QUADS);
+            glTexCoord2i(0,0);glVertex2d(mouseX + cameraPositionX, mouseY + cameraPositionY);
+            glTexCoord2i(1,0);glVertex2d(mouseX + cameraPositionX + 16, mouseY + cameraPositionY);
+            glTexCoord2i(1,1);glVertex2d(mouseX + cameraPositionX + 16, mouseY + cameraPositionY + 16);
+            glTexCoord2i(0,1);glVertex2d(mouseX + cameraPositionX, mouseY + cameraPositionY + 16);
+        glEnd();
     }
 
     public void UpdateCameraPosition(float x, float y) {
