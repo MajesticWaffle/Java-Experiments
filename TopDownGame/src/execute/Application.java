@@ -3,8 +3,10 @@ package execute;
 import org.lwjgl.BufferUtils;
 import types.Player;
 import types.Time;
+import types.WorldGenerator;
 
 import java.nio.DoubleBuffer;
+import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -20,8 +22,10 @@ public class Application {
 
         glfwSetKeyCallback(window, new Input());
         glfwSetMouseButtonCallback(window, new Mouse());
-        renderer.LoadTextureResources();
+        WorldGenerator.LoadTileResources();
 
+        PerlinGeneration.seed = 1; //new Random().nextInt(255);
+        System.out.println(PerlinGeneration.seed);
 
         while(!glfwWindowShouldClose(window)){
             Time.Update();
@@ -41,8 +45,9 @@ public class Application {
 
             player.x += ((Input.GetKey(GLFW_KEY_LEFT_SHIFT) ? player.runSpeed : player.walkSpeed) * Time.deltaTime)
                                         * ((Input.GetKey(GLFW_KEY_D) ? 1 : 0) - (Input.GetKey(GLFW_KEY_A) ? 1 : 0));
-
+            renderer.DrawNumber(1234567890, 0,0,1, false);
             renderer.UpdateCameraPosition(player.x, player.y);
+
             glfwSwapBuffers(window);
         }
 

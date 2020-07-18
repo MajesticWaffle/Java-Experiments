@@ -7,6 +7,9 @@ public class Player {
     public final float walkSpeed = 256f;
     public final float runSpeed = 512f;
 
+    public Item[] inventory = new Item[32];
+    public int[] inventoryCount = new int[32];
+
     public int ChunkPositionX(){
         return (int)x / (20 * 32);
     }

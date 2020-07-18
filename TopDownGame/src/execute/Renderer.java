@@ -1,21 +1,15 @@
 package execute;
 
 import org.lwjgl.opengl.*;
-
 import java.io.IOException;
-import types.Texture;
-import types.TextureLoader;
-import types.Tile;
-import types.Time;
+import types.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static types.WorldGenerator.*;
 
 public class Renderer{
     private static final int TileSize = 32;
-
-    private Tile[] tiles;
-    private Texture cursor;
 
     private float cameraPositionX = 0;
     private float cameraPositionY = 0;
@@ -50,34 +44,26 @@ public class Renderer{
         return window;
     }
 
-    public void LoadTextureResources(){
-        tiles = new Tile[2];
-
-        //Create fallback texture
-        Texture fallback = null;
-        try {
-             fallback = TextureLoader.loadTextureNoFallback("/res/dev/error.png");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //Load textures
-        tiles[0] = new Tile("/res/ground/grass.png", false, fallback);
-        tiles[1] = new Tile("/res/ground/sand.png", false, fallback);
-
-        cursor = TextureLoader.loadTexture("/res/ui/cursor.png", fallback);
-
-    }
-
     public void DrawChunk(int chunkPosX, int chunkPosY){
         int chunkOffsetX = (20 * 32) * chunkPosX;
         int chunkOffsetY = (15 * 32) * chunkPosY;
 
-        int[][] localBiomeMap = PerlinGeneration.GenerateChunkBiomeMap(chunkPosX, chunkPosY);
+        Chunk chunk = LoadChunk(chunkPosX, chunkPosY);
 
         for(int tileY = 0; tileY < 15; tileY++){
             for(int tileX = 0; tileX < 20; tileX++){
-                tiles[localBiomeMap[tileX][tileY]].texture.Bind();
+                //render ground tile under transparent tile
+                if(tiles[chunk.tileMap[tileX][tileY]].transparent){
+                    tiles[biomes[chunk.biomeMap[tileX][tileY]].groundTileID].texture.Bind();
+                    glBegin(GL_QUADS);
+                    glTexCoord2i(0,0);glVertex2i((TileSize * tileX) + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
+                    glTexCoord2i(1,0);glVertex2i((TileSize * tileX) + TileSize + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
+                    glTexCoord2i(1,1);glVertex2i((TileSize * tileX) + TileSize + chunkOffsetX, (TileSize * tileY) + TileSize + chunkOffsetY);
+                    glTexCoord2i(0,1);glVertex2i((TileSize * tileX) + chunkOffsetX, (TileSize * tileY) + TileSize + chunkOffsetY);
+                    glEnd();
+                }
+                tiles[chunk.tileMap[tileX][tileY]].texture.Bind();
+                //Render tile
                 glBegin(GL_QUADS);
                     glTexCoord2i(0,0);glVertex2i((TileSize * tileX) + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
                     glTexCoord2i(1,0);glVertex2i((TileSize * tileX) + TileSize + chunkOffsetX, (TileSize * tileY) + chunkOffsetY);
@@ -97,6 +83,18 @@ public class Renderer{
     }
 
     public void DrawCursor(double mouseX, double mouseY){
+        int mouseXTile = (int)Math.floor((mouseX + cameraPositionX) / 32f);
+        int mouseYTile = (int)Math.floor((mouseY + cameraPositionY) / 32f);
+        
+        glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
+        glBegin(GL_QUADS);
+            glVertex2i((mouseXTile * TileSize), (mouseYTile * TileSize));
+            glVertex2i((mouseXTile * TileSize) + 32, (mouseYTile * TileSize));
+            glVertex2i((mouseXTile * TileSize) + 32, (mouseYTile * TileSize) + 32);
+            glVertex2i((mouseXTile * TileSize), (mouseYTile * TileSize) + 32);
+        glEnd();
+
+        glColor3f(1f,1f,1f);
         cursor.Bind();
         glBegin(GL_QUADS);
             glTexCoord2i(0,0);glVertex2d(mouseX + cameraPositionX, mouseY + cameraPositionY);
@@ -106,6 +104,32 @@ public class Renderer{
         glEnd();
     }
 
+    public void DrawInventoryScreen(Item[] items, int[] counts){
+
+    }
+
+    public void DrawNumber(int value, int posX, int posY, int scale, boolean worldPosition){
+        char[] digits = String.valueOf(value).toCharArray();
+
+        float finalPositionX = posX + (worldPosition ? 0 : cameraPositionX);
+        float finalPositionY = posY + (worldPosition ? 0 : cameraPositionY);
+
+        int charSize = 16 * scale;
+        //Display each character
+        for(int charIndex = 0; charIndex < digits.length; charIndex++){
+            int digit = Integer.parseInt(String.valueOf(digits[charIndex]));
+
+            float textureOffsetX = digit / 10f;
+
+            WorldGenerator.numberFont.Bind();
+            glBegin(GL_QUADS);
+                glTexCoord2f(textureOffsetX,0); glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY);
+                glTexCoord2f((1f / 10f) + textureOffsetX,0); glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY);
+                glTexCoord2f((1f / 10f) + textureOffsetX,1); glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY + charSize);
+                glTexCoord2f(textureOffsetX,1); glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY + charSize);
+            glEnd();
+        }
+    }
     public void UpdateCameraPosition(float x, float y) {
         glTranslatef(cameraPositionX - x, cameraPositionY - y, 0f);
         cameraPositionX = x;

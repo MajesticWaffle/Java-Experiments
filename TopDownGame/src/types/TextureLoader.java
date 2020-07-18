@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class TextureLoader {
 
     //Loads a texture with no fallback, program will crash if the file does not exist
-    public static Texture loadTextureNoFallback(String fileName) throws IOException {
+    public static Texture loadTextureNoFallback(String fileName) throws NullPointerException, IOException {
         PNGDecoder decoder = new PNGDecoder(TextureLoader.class.getResourceAsStream(fileName));
         ByteBuffer buffer = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
 
@@ -40,7 +40,7 @@ public class TextureLoader {
     public static Texture loadTexture(String fileName, Texture fallback) {
         try {
             return loadTextureNoFallback(fileName);
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Texture File: " + fileName + " does not exist, using fallback texture!");
             return fallback;
         }
