@@ -6,7 +6,7 @@ import types.Chunk;
 
 import java.util.Random;
 
-import static types.WorldGenerator.*;
+import static types.Resources.*;
 
 public class PerlinGeneration {
 

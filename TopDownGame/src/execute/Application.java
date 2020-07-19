@@ -1,9 +1,10 @@
 package execute;
 
 import org.lwjgl.BufferUtils;
+import types.Item;
 import types.Player;
 import types.Time;
-import types.WorldGenerator;
+import types.Resources;
 
 import java.nio.DoubleBuffer;
 import java.util.Random;
@@ -22,9 +23,10 @@ public class Application {
 
         glfwSetKeyCallback(window, new Input());
         glfwSetMouseButtonCallback(window, new Mouse());
-        WorldGenerator.LoadTileResources();
+        Resources.LoadTileResources();
 
-        PerlinGeneration.seed = 1; //new Random().nextInt(255);
+        player.GenerateDebugInv(new Item("Jew Stick", "/res/ground/tree.png", null));
+        PerlinGeneration.seed = new Random().nextInt(255);
         System.out.println(PerlinGeneration.seed);
 
         while(!glfwWindowShouldClose(window)){
@@ -38,14 +40,25 @@ public class Application {
 
             DoubleBuffer posX = BufferUtils.createDoubleBuffer(1), posY = BufferUtils.createDoubleBuffer(1);
             glfwGetCursorPos(window, posX, posY);
-            renderer.DrawCursor(posX.get(), posY.get());
+
+            double mouseX = posX.get();
+            double mouseY = posY.get();
+
+            renderer.DrawInventoryScreen(player.inventory, player.inventoryCount, mouseX, mouseY);
+            renderer.DrawCursor(mouseX, mouseY);
 
             player.y += ((Input.GetKey(GLFW_KEY_LEFT_SHIFT) ? player.runSpeed : player.walkSpeed) * Time.deltaTime)
                                         * ((Input.GetKey(GLFW_KEY_S) ? 1 : 0) - (Input.GetKey(GLFW_KEY_W) ? 1 : 0));
 
             player.x += ((Input.GetKey(GLFW_KEY_LEFT_SHIFT) ? player.runSpeed : player.walkSpeed) * Time.deltaTime)
                                         * ((Input.GetKey(GLFW_KEY_D) ? 1 : 0) - (Input.GetKey(GLFW_KEY_A) ? 1 : 0));
-            renderer.DrawNumber(1234567890, 0,0,1, false);
+
+            renderer.DrawText("Press (F) to fUCK", 16, 480 - 112,1, false);
+            renderer.DrawText("the quick brown cunt", 16, 480 - 96,1, false);
+            renderer.DrawText("JUMPED OVER THE LAZY JEW!", 16, 480 - 80,1, false);
+
+            renderer.DrawText("?!@#$%^&*()_+{}[]|", 16, 480 - 64,1, false);
+            renderer.DrawText("Heebs will not divide us!", 16, 480 - 32, 1, false);
             renderer.UpdateCameraPosition(player.x, player.y);
 
             glfwSwapBuffers(window);

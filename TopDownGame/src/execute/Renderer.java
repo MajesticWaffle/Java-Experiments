@@ -1,20 +1,26 @@
 package execute;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.lwjgl.opengl.*;
+
+import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import types.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static types.WorldGenerator.*;
+import static types.Resources.*;
 
 public class Renderer{
     private static final int TileSize = 32;
 
     private float cameraPositionX = 0;
     private float cameraPositionY = 0;
-
-
 
     public long InitOpenGLContext(int windowX, int windowY){
         if(!glfwInit()){
@@ -85,14 +91,6 @@ public class Renderer{
     public void DrawCursor(double mouseX, double mouseY){
         int mouseXTile = (int)Math.floor((mouseX + cameraPositionX) / 32f);
         int mouseYTile = (int)Math.floor((mouseY + cameraPositionY) / 32f);
-        
-        glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
-        glBegin(GL_QUADS);
-            glVertex2i((mouseXTile * TileSize), (mouseYTile * TileSize));
-            glVertex2i((mouseXTile * TileSize) + 32, (mouseYTile * TileSize));
-            glVertex2i((mouseXTile * TileSize) + 32, (mouseYTile * TileSize) + 32);
-            glVertex2i((mouseXTile * TileSize), (mouseYTile * TileSize) + 32);
-        glEnd();
 
         glColor3f(1f,1f,1f);
         cursor.Bind();
@@ -104,32 +102,102 @@ public class Renderer{
         glEnd();
     }
 
-    public void DrawInventoryScreen(Item[] items, int[] counts){
+    public void DrawInventoryScreen(Item[] items, int[] counts, double mouseX, double mouseY){
+        //Display background
+        glDisable(GL_TEXTURE_2D);
+        glColor3f(0.5f,0.5f,0.5f);
+        glBegin(GL_QUADS);
+            glVertex2f(0 + cameraPositionX,0 + cameraPositionY);
+            glVertex2f(306 + cameraPositionX,0 + cameraPositionY);
+            glVertex2f(306 + cameraPositionX,154 + cameraPositionY);
+            glVertex2f(0 + cameraPositionX,154 + cameraPositionY);
+        glEnd();
 
+        for(int i = 0; i < 32; i++){
+            int posX = i % 8;
+            int posY = i / 8;
+
+            //Icon border
+            glColor3f(0.25f,0.25f,0.25f);
+            glBegin(GL_QUADS);
+                glVertex2f((36 * posX) + (2 * (posX + 1)) + cameraPositionX,(36 * posY) + (2 * (posY + 1)) + cameraPositionY);
+                glVertex2f((36 * posX) + (2 * (posX + 1)) + 36 + cameraPositionX,(36 * posY) + (2 * (posY + 1)) + cameraPositionY);
+                glVertex2f((36 * posX) + (2 * (posX + 1)) + 36 + cameraPositionX,(36 * posY) + (2 * (posY + 1)) + 36 + cameraPositionY);
+                glVertex2f((36 * posX) + (2 * (posX + 1)) + cameraPositionX,(36 * posY) + (2 * (posY + 1)) + 36 + cameraPositionY);
+            glEnd();
+
+            //Icon background
+            glColor3f(0.75f,0.75f,0.75f);
+            glBegin(GL_QUADS);
+                glVertex2f((32 * posX) + (6 * posX) + 4 + cameraPositionX,(32 * posY) + (6 * posY) + 4 + cameraPositionY);
+                glVertex2f((32 * posX) + (6 * posX) + 4 + 32 + cameraPositionX,(32 * posY) + (6 * posY) + 4 + cameraPositionY);
+                glVertex2f((32 * posX) + (6 * posX) + 4 + 32 + cameraPositionX,(32 * posY) + (6 * posY) + 4 + 32 + cameraPositionY);
+                glVertex2f((32 * posX) + (6 * posX) + 4 + cameraPositionX,(32 * posY) + (6 * posY) + 4 + 32 + cameraPositionY);
+            glEnd();
+
+            glColor3f(1f,1f,1f);
+            try {
+                items[i].texture.Bind();
+                glEnable(GL_TEXTURE_2D);
+                glBegin(GL_QUADS);
+                    glTexCoord2i(0, 0); glVertex2f((32 * posX) + (6 * posX) + 4 + cameraPositionX, (32 * posY) + (6 * posY) + 4 + cameraPositionY);
+                    glTexCoord2i(1, 0); glVertex2f((32 * posX) + (6 * posX) + 4 + 32 + cameraPositionX, (32 * posY) + (6 * posY) + 4 + cameraPositionY);
+                    glTexCoord2i(1, 1); glVertex2f((32 * posX) + (6 * posX) + 4 + 32 + cameraPositionX, (32 * posY) + (6 * posY) + 4 + 32 + cameraPositionY);
+                    glTexCoord2i(0, 1); glVertex2f((32 * posX) + (6 * posX) + 4 + cameraPositionX, (32 * posY) + (6 * posY) + 4 + 32 + cameraPositionY);
+                glEnd();
+                glDisable(GL_TEXTURE_2D);
+
+            }catch(NullPointerException e){
+
+            }
+        }
+
+        try {
+            //Display item name and count
+            int mouseXIndex = (int) Math.floor((mouseX) / 38f);
+            int mouseYIndex =  (int) Math.floor((mouseY) / 38f);
+            if((mouseXIndex >= 0 && mouseXIndex < 8) && (mouseYIndex >= 0 && mouseYIndex < 4)) {
+                int mouseIndex = mouseXIndex + (mouseYIndex * 8);
+                DrawText(items[mouseIndex].displayName + " x" + counts[mouseIndex], (int) mouseX + 16, (int) mouseY + 16, 1, false);
+            }
+        }
+        catch(NullPointerException e){
+
+        }
     }
 
-    public void DrawNumber(int value, int posX, int posY, int scale, boolean worldPosition){
-        char[] digits = String.valueOf(value).toCharArray();
+    public void DrawText(String text, int posX, int posY, int scale, boolean isWorldPosition){
+        char[] charArray = text.toCharArray();
 
-        float finalPositionX = posX + (worldPosition ? 0 : cameraPositionX);
-        float finalPositionY = posY + (worldPosition ? 0 : cameraPositionY);
+        float finalPositionX = posX + (isWorldPosition ? 0 : cameraPositionX);
+        float finalPositionY = posY + (isWorldPosition ? 0 : cameraPositionY);
 
         int charSize = 16 * scale;
-        //Display each character
-        for(int charIndex = 0; charIndex < digits.length; charIndex++){
-            int digit = Integer.parseInt(String.valueOf(digits[charIndex]));
 
-            float textureOffsetX = digit / 10f;
+        for(int charIndex = 0; charIndex < charArray.length; charIndex++){
+            char[] chars = fontIndices.toCharArray();
+            int indexLinear = ArrayUtils.indexOf(chars, charArray[charIndex]);
 
-            WorldGenerator.numberFont.Bind();
+            int indexX = indexLinear % 10;
+            int indexY = indexLinear / 10;
+
+            float textureOffsetX = indexX / 10f;
+            float textureOffsetY = indexY / 10f;
+
+            font.Bind();
             glBegin(GL_QUADS);
-                glTexCoord2f(textureOffsetX,0); glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY);
-                glTexCoord2f((1f / 10f) + textureOffsetX,0); glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY);
-                glTexCoord2f((1f / 10f) + textureOffsetX,1); glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY + charSize);
-                glTexCoord2f(textureOffsetX,1); glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY + charSize);
+                glTexCoord2f(textureOffsetX,textureOffsetY);glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY);
+                glTexCoord2f((1f / 10f) + textureOffsetX,textureOffsetY);glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY);
+                glTexCoord2f((1f / 10f) + textureOffsetX,(1 / 10f) + textureOffsetY);glVertex2f(finalPositionX + (charIndex * charSize) + charSize, finalPositionY + charSize);
+                glTexCoord2f(textureOffsetX,(1 / 10f) + textureOffsetY);glVertex2f(finalPositionX + (charIndex * charSize), finalPositionY + charSize);
             glEnd();
         }
     }
+
+    public void DrawNumber(int value, int posX, int posY, int scale, boolean worldPosition){
+        DrawText(String.valueOf(value), posX, posY, scale, worldPosition);
+    }
+
     public void UpdateCameraPosition(float x, float y) {
         glTranslatef(cameraPositionX - x, cameraPositionY - y, 0f);
         cameraPositionX = x;
