@@ -1,9 +1,8 @@
 package types;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
+import glTypes.Texture;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -33,7 +32,7 @@ public class TextureLoader {
         //upload image data into texture
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
-        return new Texture(id);
+        return new Texture(id, decoder.getWidth() / 16, decoder.getHeight() / 16);
     }
 
     //Loads a texture with no fallback

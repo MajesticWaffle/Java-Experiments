@@ -1,5 +1,7 @@
 package types;
 
+import glTypes.Texture;
+
 public class Item {
     public String displayName;
     public Texture texture;

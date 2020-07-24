@@ -1,5 +1,7 @@
 package execute;
 
+import glTypes.*;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import types.Item;
 import types.Player;
@@ -25,9 +27,11 @@ public class Application {
         glfwSetMouseButtonCallback(window, new Mouse());
         Resources.LoadTileResources();
 
-        player.GenerateDebugInv(new Item("Jew Stick", "/res/ground/tree.png", null));
+        //player.GenerateDebugInv(new Item("Jew Stick", "/res/ground/tree.png", null));
         PerlinGeneration.seed = new Random().nextInt(255);
         System.out.println(PerlinGeneration.seed);
+
+
 
         while(!glfwWindowShouldClose(window)){
             Time.Update();
@@ -36,7 +40,7 @@ public class Application {
 
             glfwPollEvents();
 
-            renderer.DrawChunksInRenderDistance(player.ChunkPositionX(), player.ChunkPositionY(), renderDistance);
+            renderer.DrawChunksInRenderDistance(player.ChunkPositionX(), player.ChunkPositionY(), renderDistance, window);
 
             DoubleBuffer posX = BufferUtils.createDoubleBuffer(1), posY = BufferUtils.createDoubleBuffer(1);
             glfwGetCursorPos(window, posX, posY);
@@ -44,8 +48,12 @@ public class Application {
             double mouseX = posX.get();
             double mouseY = posY.get();
 
-            renderer.DrawInventoryScreen(player.inventory, player.inventoryCount, mouseX, mouseY);
-            renderer.DrawCursor(mouseX, mouseY);
+            //renderer.DrawInventoryScreen(player.inventory, player.inventoryCount, mouseX, mouseY);
+            //renderer.DrawCursor(mouseX, mouseY);
+
+
+            Resources.font.Bind(0);
+
 
             player.y += ((Input.GetKey(GLFW_KEY_LEFT_SHIFT) ? player.runSpeed : player.walkSpeed) * Time.deltaTime)
                                         * ((Input.GetKey(GLFW_KEY_S) ? 1 : 0) - (Input.GetKey(GLFW_KEY_W) ? 1 : 0));
@@ -53,13 +61,8 @@ public class Application {
             player.x += ((Input.GetKey(GLFW_KEY_LEFT_SHIFT) ? player.runSpeed : player.walkSpeed) * Time.deltaTime)
                                         * ((Input.GetKey(GLFW_KEY_D) ? 1 : 0) - (Input.GetKey(GLFW_KEY_A) ? 1 : 0));
 
-            renderer.DrawText("Press (F) to fUCK", 16, 480 - 112,1, false);
-            renderer.DrawText("the quick brown cunt", 16, 480 - 96,1, false);
-            renderer.DrawText("JUMPED OVER THE LAZY JEW!", 16, 480 - 80,1, false);
 
-            renderer.DrawText("?!@#$%^&*()_+{}[]|", 16, 480 - 64,1, false);
-            renderer.DrawText("Heebs will not divide us!", 16, 480 - 32, 1, false);
-            renderer.UpdateCameraPosition(player.x, player.y);
+            //renderer.UpdateCameraPosition(player.x, player.y);
 
             glfwSwapBuffers(window);
         }
